@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -204,6 +205,11 @@ tr:last-child td{border-bottom:none}
         <button class="nav-item" onclick="sp('documentos',this)"><div class="nav-dot"></div>Documentos</button>
         <button class="nav-item" onclick="sp('liderancas',this)"><div class="nav-dot"></div>Lideranças</button>
       </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Imprensa</div>
+        <button class="nav-item" onclick="sp('imprensa',this)"><div class="nav-dot"></div>Reportagens e links</button>
+        <button class="nav-item" onclick="sp('noticias',this)"><div class="nav-dot"></div>Notícias e releases</button>
+      </div>
     </nav>
     <main class="main">
 
@@ -281,8 +287,8 @@ tr:last-child td{border-bottom:none}
             <input placeholder="Buscar..." oninput="filterTable(this.value,'t-int')" style="background:rgba(255,255,255,0.05);border:1px solid var(--border);color:white;padding:6px 12px;font-size:12px;width:200px;outline:none">
           </div>
           <div class="card-body table-wrap">
-            <table><thead><tr><th>Nome</th><th>E-mail</th><th>Estado</th><th>Data</th><th>Status</th><th>Ação</th></tr></thead>
-            <tbody id="t-int"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Carregando...</td></tr></tbody></table>
+            <table><thead><tr><th>Nome</th><th>E-mail</th><th>Telefone / WhatsApp</th><th>Estado</th><th>Cidade</th><th>Mensagem</th><th>Data</th><th>Status</th></tr></thead>
+            <tbody id="t-int"><tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">Carregando...</td></tr></tbody></table>
           </div>
         </div>
       </div>
@@ -296,8 +302,8 @@ tr:last-child td{border-bottom:none}
         <div class="card">
           <div class="card-header"><span class="card-title" id="parc-count">Carregando...</span></div>
           <div class="card-body table-wrap">
-            <table><thead><tr><th>Nome</th><th>Empresa</th><th>E-mail</th><th>Tipo</th><th>Data</th><th>Status</th></tr></thead>
-            <tbody id="t-parc"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Carregando...</td></tr></tbody></table>
+            <table><thead><tr><th>Nome</th><th>Empresa</th><th>E-mail</th><th>Telefone</th><th>Tipo</th><th>Mensagem</th><th>Data</th><th>Status</th></tr></thead>
+            <tbody id="t-parc"><tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">Carregando...</td></tr></tbody></table>
           </div>
         </div>
       </div>
@@ -311,8 +317,8 @@ tr:last-child td{border-bottom:none}
         <div class="card">
           <div class="card-header"><span class="card-title" id="atl-count">Carregando...</span></div>
           <div class="card-body table-wrap">
-            <table><thead><tr><th>Nome</th><th>E-mail</th><th>Estado</th><th>Academia</th><th>Data</th><th>Status</th></tr></thead>
-            <tbody id="t-atl"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Carregando...</td></tr></tbody></table>
+            <table><thead><tr><th>Nome</th><th>E-mail</th><th>Telefone / WhatsApp</th><th>Estado</th><th>Academia</th><th>Mestre</th><th>Data</th><th>Status</th></tr></thead>
+            <tbody id="t-atl"><tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">Carregando...</td></tr></tbody></table>
           </div>
         </div>
       </div>
@@ -345,6 +351,28 @@ tr:last-child td{border-bottom:none}
             <table><thead><tr><th>Nome</th><th>Cargo</th><th>Estado</th><th>Mandato</th><th>Público</th><th>Ações</th></tr></thead>
             <tbody id="t-ldr"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Carregando...</td></tr></tbody></table>
           </div>
+        </div>
+      </div>
+
+      <!-- IMPRENSA -->
+      <div id="page-imprensa" class="page">
+        <div class="page-header">
+          <div><div class="page-title">Reportagens e links</div><div class="page-sub">Cole o link da reportagem — aparece automaticamente na área de imprensa do site</div></div>
+          <button class="btn-primary" onclick="openModalImprensa()">+ Adicionar reportagem</button>
+        </div>
+        <div class="card">
+          <div class="card-body" id="imprensa-list"><div class="loading">Carregando...</div></div>
+        </div>
+      </div>
+
+      <!-- NOTÍCIAS -->
+      <div id="page-noticias" class="page">
+        <div class="page-header">
+          <div><div class="page-title">Notícias e releases</div><div class="page-sub">Escreva diretamente — texto, imagem e publicação no site</div></div>
+          <button class="btn-primary" onclick="openModalNoticia()">+ Nova notícia</button>
+        </div>
+        <div class="card">
+          <div class="card-body" id="noticias-list"><div class="loading">Carregando...</div></div>
         </div>
       </div>
 
@@ -404,7 +432,54 @@ tr:last-child td{border-bottom:none}
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<!-- MODAL IMPRENSA -->
+<div class="modal-overlay" id="modal-imprensa">
+  <div class="modal">
+    <div class="modal-title">Adicionar Reportagem</div>
+    <input type="hidden" id="imp-id">
+    <div class="form-group"><label>Link da reportagem (URL completa)</label><input type="url" id="imp-url" placeholder="https://globo.com/esportes/capoeira..." oninput="previewImprensa(this.value)"></div>
+    <div class="form-group"><label>Título da reportagem</label><input type="text" id="imp-titulo" placeholder="Ex: FCC Rio de Janeiro realiza 1ª etapa do circuito..."></div>
+    <div class="form-group"><label>Veículo de comunicação</label><input type="text" id="imp-veiculo" placeholder="Ex: TV Globo, Folha de SP, CNN Brasil..."></div>
+    <div class="form-group"><label>Data de publicação</label><input type="date" id="imp-data"></div>
+    <div class="form-group"><label>Descrição / chamada (opcional)</label><textarea id="imp-desc" placeholder="Breve descrição da reportagem..."></textarea></div>
+    <div class="form-group"><label>Destaque na página inicial</label>
+      <select id="imp-destaque"><option value="false">Não</option><option value="true">Sim — aparece em destaque</option></select>
+    </div>
+    <div id="imp-preview" style="display:none;background:rgba(255,255,255,0.04);border:1px solid var(--border);padding:12px;margin-top:4px;font-size:12px;color:var(--muted)">
+      Prévia do link carregada
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="saveImprensa()">Publicar no site</button>
+      <button class="btn-secondary" onclick="closeModal('modal-imprensa')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NOTÍCIA -->
+<div class="modal-overlay" id="modal-noticia">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-title">Nova Notícia / Release</div>
+    <input type="hidden" id="not-id">
+    <div class="form-group"><label>Título</label><input type="text" id="not-titulo" placeholder="Título da notícia"></div>
+    <div class="form-group"><label>Categoria</label>
+      <select id="not-categoria">
+        <option value="noticia">Notícia</option>
+        <option value="release">Release / Comunicado</option>
+        <option value="resultado">Resultado de competição</option>
+        <option value="agenda">Agenda / Evento</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Texto completo</label><textarea id="not-texto" style="min-height:180px" placeholder="Escreva o texto completo da notícia aqui..."></textarea></div>
+    <div class="form-group"><label>URL da imagem (opcional)</label><input type="url" id="not-img" placeholder="https://... ou deixe em branco"></div>
+    <div class="form-group"><label>Publicar no site</label>
+      <select id="not-pub"><option value="true">Sim — publicar agora</option><option value="false">Não — salvar rascunho</option></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="saveNoticia()">Salvar e publicar</button>
+      <button class="btn-secondary" onclick="closeModal('modal-noticia')">Cancelar</button>
+    </div>
+  </div>
+</div>
 
 <script>
 const SB_URL = 'https://wnqfmrzipefqtaeuhdya.supabase.co';
@@ -511,7 +586,8 @@ function sp(id, el) {
     'interessados': ()=>loadCadastros('interessados'),
     'parceiros-leads': ()=>loadCadastros('parceiros-leads'),
     'atletas': ()=>loadCadastros('atletas'),
-    'documentos': loadDocumentos,
+    'imprensa': loadImprensa,
+    'noticias': loadNoticias,
     'liderancas': loadLiderancas,
     'conteudo': loadConteudo,
     'parceiros': loadParceiros,
@@ -591,9 +667,9 @@ async function loadFederacoesSelect() {
 // ── CADASTROS ──
 async function loadCadastros(type) {
   const map = {
-    'interessados':  {table:'cadastros_interessados', cols:['nome','email','estado','criado_em','status'], tbody:'t-int', count:'int-count', label:'interessados'},
-    'parceiros-leads':{table:'cadastros_parceiros',   cols:['nome_contato','empresa','email','tipo','criado_em','status'], tbody:'t-parc', count:'parc-count', label:'propostas'},
-    'atletas':       {table:'cadastros_atletas',      cols:['nome','email','estado','academia','criado_em','status'], tbody:'t-atl', count:'atl-count', label:'atletas'},
+    'interessados':  {table:'cadastros_interessados', cols:['nome','email','telefone','estado','cidade','mensagem','criado_em','status'], tbody:'t-int', count:'int-count', label:'interessados'},
+    'parceiros-leads':{table:'cadastros_parceiros',   cols:['nome_contato','empresa','email','telefone','tipo','descricao','criado_em','status'], tbody:'t-parc', count:'parc-count', label:'propostas'},
+    'atletas':       {table:'cadastros_atletas',      cols:['nome','email','telefone','estado','academia','mestre','criado_em','status'], tbody:'t-atl', count:'atl-count', label:'atletas'},
   };
   const cfg = map[type];
   const tbody = document.getElementById(cfg.tbody);
@@ -601,9 +677,16 @@ async function loadCadastros(type) {
   try {
     const rows = await sb(cfg.table,{order:'criado_em.desc'});
     document.getElementById(cfg.count).textContent = `${rows.length} ${cfg.label}`;
-    if(!rows.length){tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Nenhum cadastro ainda.</td></tr>`;return;}
+    if(!rows.length){tbody.innerHTML=`<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">Nenhum cadastro ainda.</td></tr>`;return;}
     tbody.innerHTML = rows.map(r=>`<tr>
-      ${cfg.cols.map(c=>`<td>${c==='criado_em'?formatDate(r[c]):(c==='status'?`<span class="badge badge-${r[c]==='novo'?'novo':r[c]==='ativo'?'ativo':'contato'}">${r[c]||'novo'}</span>`:r[c]||'—')}</td>`).join('')}
+      ${cfg.cols.map(c=>`<td>${
+        c==='criado_em' ? formatDate(r[c]) :
+        c==='status' ? `<span class="badge badge-${r[c]==='novo'?'novo':r[c]==='ativo'?'ativo':'contato'}">${r[c]||'novo'}</span>` :
+        c==='email' ? `<a href="mailto:${r[c]}" style="color:var(--orange);text-decoration:none">${r[c]||'—'}</a>` :
+        c==='telefone' ? (r[c]?`<a href="https://wa.me/55${r[c].replace(/\D/g,'')}" target="_blank" style="color:#25D366;text-decoration:none">📱 ${r[c]}</a>`:'—') :
+        (c==='mensagem'||c==='descricao') ? (r[c]?`<span title="${r[c].replace(/"/g,"'")}" style="cursor:help;border-bottom:1px dotted rgba(255,255,255,0.3)">${r[c].substring(0,40)}${r[c].length>40?'…':''}</span>`:'—') :
+        r[c]||'—'
+      }</td>`).join('')}
     </tr>`).join('');
   } catch(e){ tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;color:var(--red);padding:24px">Erro ao carregar dados.</td></tr>`; }
 }
@@ -769,10 +852,207 @@ function filterTable(q, tbodyId) {
   rows.forEach(r=>{r.style.display = r.textContent.toLowerCase().includes(q.toLowerCase())?'':'none'});
 }
 
-function exportCSV(table) {
-  window.open(`${SB_URL}/rest/v1/${table}?select=*&apikey=${SB_KEY}`,'_blank');
-  toast('Dados abertos em nova aba — salve como CSV');
+async function exportCSV(table) {
+  try {
+    const rows = await sb(table, {});
+    if(!rows.length){toast('Nenhum dado para exportar','error');return;}
+
+    const labelMap = {
+      nome:'Nome', nome_contato:'Nome Contato', email:'E-mail',
+      telefone:'Telefone/WhatsApp', estado:'Estado', cidade:'Cidade',
+      empresa:'Empresa', tipo:'Tipo', descricao:'Mensagem',
+      mensagem:'Mensagem', academia:'Academia', mestre:'Mestre',
+      status:'Status', criado_em:'Data Cadastro', graduacao:'Graduação',
+      federacao_sigla:'Federação', data_nascimento:'Nascimento',
+      anotacoes_adm:'Anotações ADM', atualizado_em:'Atualizado em'
+    };
+
+    const skip = ['id','atualizado_em','anotacoes_adm'];
+    const headers = Object.keys(rows[0]).filter(h=>!skip.includes(h));
+    const labels = headers.map(h=>labelMap[h]||h);
+
+    const csvRows = [
+      labels.join(';'),
+      ...rows.map(r=>headers.map(h=>{
+        let val = r[h]===null||r[h]===undefined?'':String(r[h]);
+        if(h==='criado_em'||h==='atualizado_em') val = val?new Date(val).toLocaleString('pt-BR'):'';
+        return '"'+val.replace(/"/g,'""')+'"';
+      }).join(';'))
+    ].join('\r\n');
+
+    const blob = new Blob(['\uFEFF'+csvRows],{type:'text/csv;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href=url;
+    a.download=table.replace('cadastros_','')+'_'+new Date().toISOString().slice(0,10)+'.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    toast('Exportado com sucesso! Abra com Excel → separador ponto-e-vírgula');
+  } catch(e){ toast('Erro ao exportar','error'); }
 }
+
+
+// ── IMPRENSA ──
+async function loadImprensa() {
+  const el = document.getElementById('imprensa-list');
+  el.innerHTML = '<div class="loading">Carregando...</div>';
+  try {
+    const rows = await sb('imprensa',{order:'criado_em.desc'});
+    if(!rows.length){
+      el.innerHTML='<div style="text-align:center;padding:32px;color:var(--muted)"><div style="font-size:32px;margin-bottom:12px">📰</div><div>Nenhuma reportagem publicada ainda.</div><div style="font-size:12px;margin-top:8px">Clique em "+ Adicionar reportagem" para começar</div></div>';
+      return;
+    }
+    el.innerHTML = `<table><thead><tr><th>Título</th><th>Veículo</th><th>Data</th><th>Destaque</th><th>Ativo</th><th>Ações</th></tr></thead><tbody>
+    ${rows.map(r=>`<tr>
+      <td><a href="${r.url}" target="_blank" style="color:var(--orange);text-decoration:none">${r.titulo}</a>${r.descricao?`<div style="font-size:11px;color:var(--muted);margin-top:2px">${r.descricao.substring(0,60)}...</div>`:''}</td>
+      <td style="font-weight:600">${r.veiculo}</td>
+      <td>${r.data_pub?new Date(r.data_pub+'T12:00:00').toLocaleDateString('pt-BR'):'—'}</td>
+      <td><span class="badge ${r.destaque?'badge-ativo':'badge-estruturando'}">${r.destaque?'Destaque':'Normal'}</span></td>
+      <td><span class="badge ${r.ativo?'badge-ativo':'badge-estruturando'}">${r.ativo?'Visível':'Oculto'}</span></td>
+      <td style="display:flex;gap:6px">
+        <button class="btn-secondary" style="font-size:11px;padding:4px 8px" onclick="editImprensa('${r.id}')">Editar</button>
+        <button class="btn-secondary" style="font-size:11px;padding:4px 8px;color:var(--red)" onclick="toggleImprensa('${r.id}',${r.ativo})">${r.ativo?'Ocultar':'Ativar'}</button>
+      </td>
+    </tr>`).join('')}
+    </tbody></table>`;
+  } catch(e){ el.innerHTML='<div class="loading">Erro ao carregar.</div>'; }
+}
+
+function openModalImprensa() {
+  document.getElementById('imp-id').value='';
+  document.getElementById('imp-url').value='';
+  document.getElementById('imp-titulo').value='';
+  document.getElementById('imp-veiculo').value='';
+  document.getElementById('imp-data').value='';
+  document.getElementById('imp-desc').value='';
+  document.getElementById('imp-destaque').value='false';
+  document.getElementById('imp-preview').style.display='none';
+  document.getElementById('modal-imprensa').classList.add('show');
+}
+
+function previewImprensa(url) {
+  const prev = document.getElementById('imp-preview');
+  if(url && url.startsWith('http')) {
+    prev.style.display='block';
+    prev.innerHTML=`<div style="color:var(--orange);margin-bottom:4px">🔗 Link detectado</div><div>${url}</div><div style="margin-top:6px;color:rgba(255,255,255,0.5)">Título e veículo serão preenchidos automaticamente se disponíveis.</div>`;
+    try {
+      const domain = new URL(url).hostname.replace('www.','');
+      const veiculoEl = document.getElementById('imp-veiculo');
+      if(!veiculoEl.value) veiculoEl.value = domain;
+    } catch(e){}
+  } else {
+    prev.style.display='none';
+  }
+}
+
+async function saveImprensa() {
+  const id = document.getElementById('imp-id').value;
+  const url = document.getElementById('imp-url').value.trim();
+  const titulo = document.getElementById('imp-titulo').value.trim();
+  const veiculo = document.getElementById('imp-veiculo').value.trim();
+  if(!url||!titulo||!veiculo){toast('Preencha URL, título e veículo','error');return;}
+  const data = {
+    url, titulo, veiculo,
+    data_pub: document.getElementById('imp-data').value||null,
+    descricao: document.getElementById('imp-desc').value||null,
+    destaque: document.getElementById('imp-destaque').value==='true',
+    ativo: true
+  };
+  const ok = id ? await sbUpdate('imprensa',id,data) : await sbInsert('imprensa',data);
+  if(ok){toast('Reportagem publicada no site!');closeModal('modal-imprensa');loadImprensa();}
+  else toast('Erro ao publicar','error');
+}
+
+async function editImprensa(id) {
+  const rows = await sb('imprensa',{filter:`id=eq.${id}`});
+  if(!rows[0]) return;
+  const r = rows[0];
+  document.getElementById('imp-id').value=r.id;
+  document.getElementById('imp-url').value=r.url;
+  document.getElementById('imp-titulo').value=r.titulo;
+  document.getElementById('imp-veiculo').value=r.veiculo;
+  document.getElementById('imp-data').value=r.data_pub||'';
+  document.getElementById('imp-desc').value=r.descricao||'';
+  document.getElementById('imp-destaque').value=String(r.destaque);
+  document.getElementById('modal-imprensa').classList.add('show');
+}
+
+async function toggleImprensa(id, ativo) {
+  const ok = await sbUpdate('imprensa',id,{ativo:!ativo});
+  if(ok){toast(ativo?'Reportagem ocultada':'Reportagem ativada');loadImprensa();}
+}
+
+// ── NOTÍCIAS ──
+async function loadNoticias() {
+  const el = document.getElementById('noticias-list');
+  el.innerHTML = '<div class="loading">Carregando...</div>';
+  try {
+    const rows = await sb('imprensa',{filter:'tipo=eq.noticia',order:'criado_em.desc'});
+    el.innerHTML='<div style="text-align:center;padding:32px;color:var(--muted)"><div style="font-size:32px;margin-bottom:12px">✍️</div><div>Use "+ Nova notícia" para escrever e publicar diretamente no site.</div></div>';
+  } catch(e){}
+}
+
+function openModalNoticia() {
+  document.getElementById('not-id').value='';
+  document.getElementById('not-titulo').value='';
+  document.getElementById('not-texto').value='';
+  document.getElementById('not-img').value='';
+  document.getElementById('not-pub').value='true';
+  document.getElementById('modal-noticia').classList.add('show');
+}
+
+async function saveNoticia() {
+  const titulo = document.getElementById('not-titulo').value.trim();
+  const texto = document.getElementById('not-texto').value.trim();
+  if(!titulo||!texto){toast('Preencha título e texto','error');return;}
+  const data = {
+    titulo,
+    url: '#',
+    veiculo: 'FCC Mundo',
+    descricao: texto.substring(0,300),
+    imagem_url: document.getElementById('not-img').value||null,
+    ativo: document.getElementById('not-pub').value==='true',
+    data_pub: new Date().toISOString().slice(0,10)
+  };
+  const ok = await sbInsert('imprensa',data);
+  if(ok){toast('Notícia publicada com sucesso!');closeModal('modal-noticia');loadImprensa();}
+  else toast('Erro ao publicar','error');
+}
+
+// ── UPLOAD DE IMAGENS (Supabase Storage) ──
+async function uploadImagem(file, pasta='geral') {
+  const ext = file.name.split('.').pop();
+  const nome = `${pasta}/${Date.now()}.${ext}`;
+  const r = await fetch(`${SB_URL}/storage/v1/object/fcc-media/${nome}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${SESSION.access_token}`,
+      'Content-Type': file.type,
+      'x-upsert': 'true'
+    },
+    body: file
+  });
+  if(r.ok) {
+    const publicUrl = `${SB_URL}/storage/v1/object/public/fcc-media/${nome}`;
+    return publicUrl;
+  }
+  return null;
+}
+
+// Ativar upload de imagens na seção Conteúdo
+document.addEventListener('DOMContentLoaded', ()=>{
+  const zone = document.querySelector('.upload-zone');
+  if(zone) {
+    zone.onclick = ()=>{ const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.multiple=true; inp.onchange=async e=>{
+      for(const f of e.target.files){
+        toast(`Enviando ${f.name}...`,'info');
+        const url = await uploadImagem(f,'imagens');
+        if(url) toast(`✓ ${f.name} enviado! URL copiada.`);
+        else toast(`Erro ao enviar ${f.name}`,'error');
+      }
+    }; inp.click(); };
+  }
+});
 
 function openModalDoc() { document.getElementById('modal-doc').classList.add('show'); }
 function openModalLider() {
