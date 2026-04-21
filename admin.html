@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>FCC Mundo — Painel ADM</title>
+<style>
+:root{--orange:#E8650A;--black:#0A0A0A;--dark:#141414;--dark2:#1C1C1C;--border:rgba(255,255,255,0.08);--text:rgba(255,255,255,0.85);--muted:rgba(255,255,255,0.45);--green:#2D9A4E;--red:#E24B4A;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--black);color:var(--text);min-height:100vh}
+
+/* LOGIN */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--dark)}
+.login-box{background:var(--dark2);border:1px solid var(--border);padding:48px 40px;width:100%;max-width:400px}
+.login-logo{text-align:center;margin-bottom:32px}
+.login-logo-img{width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid var(--orange)}
+.login-title{font-size:22px;font-weight:700;margin-top:12px;letter-spacing:1px}
+.login-title span{color:var(--orange)}
+.login-sub{font-size:13px;color:var(--muted);margin-top:4px}
+.field{display:flex;flex-direction:column;margin-bottom:16px}
+.field label{font-size:11px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;font-weight:600}
+.field input{background:rgba(255,255,255,0.05);border:1px solid var(--border);color:white;padding:11px 14px;font-size:14px;outline:none;transition:border .2s;width:100%}
+.field input:focus{border-color:var(--orange)}
+.btn-login{background:var(--orange);color:white;border:none;padding:13px;font-size:14px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;width:100%;margin-top:8px;transition:background .2s}
+.btn-login:hover{background:#F07830}
+.login-error{background:rgba(226,75,74,0.12);border:1px solid rgba(226,75,74,0.3);color:var(--red);padding:10px 14px;font-size:13px;margin-top:12px;display:none}
+
+/* ADMIN */
+#admin-screen{display:none}
+.topbar{background:#0A0A0A;border-bottom:1px solid var(--border);height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:50}
+.top-brand{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700;letter-spacing:0.5px}
+.top-brand span{color:var(--orange)}
+.top-right{display:flex;align-items:center;gap:12px}
+.top-user{font-size:12px;color:var(--muted);background:rgba(255,255,255,0.05);padding:4px 12px;border-radius:999px}
+.btn-logout{font-size:12px;color:var(--muted);background:none;border:none;cursor:pointer;transition:color .2s}
+.btn-logout:hover{color:var(--red)}
+.layout{display:flex;min-height:calc(100vh - 52px)}
+.sidebar{width:200px;background:var(--dark);border-right:1px solid var(--border);padding:16px 0;flex-shrink:0;position:sticky;top:52px;height:calc(100vh - 52px);overflow-y:auto}
+.nav-section{margin-bottom:20px}
+.nav-section-label{font-size:10px;color:rgba(255,255,255,0.25);letter-spacing:1.5px;text-transform:uppercase;padding:0 16px 6px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:8px;padding:8px 16px;color:var(--muted);font-size:13px;cursor:pointer;border-left:2px solid transparent;transition:all .15s;background:none;border-top:none;border-right:none;border-bottom:none;width:100%;text-align:left}
+.nav-item:hover{color:white;background:rgba(255,255,255,0.04)}
+.nav-item.active{color:white;border-left-color:var(--orange);background:rgba(232,101,10,0.07)}
+.nav-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.2);flex-shrink:0}
+.nav-dot.on{background:var(--orange)}
+.main{flex:1;padding:28px;overflow-auto}
+.page{display:none}.page.active{display:block}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.page-title{font-size:22px;font-weight:700;letter-spacing:0.5px}
+.page-sub{font-size:13px;color:var(--muted);margin-top:3px}
+.btn-primary{background:var(--orange);color:white;border:none;padding:9px 20px;font-size:13px;font-weight:700;letter-spacing:0.5px;cursor:pointer;transition:background .2s}
+.btn-primary:hover{background:#F07830}
+.btn-secondary{background:transparent;color:var(--text);border:1px solid var(--border);padding:8px 16px;font-size:12px;cursor:pointer;transition:all .2s}
+.btn-secondary:hover{border-color:var(--orange);color:var(--orange)}
+.btn-danger{background:transparent;color:var(--red);border:1px solid rgba(226,75,74,0.3);padding:6px 12px;font-size:11px;cursor:pointer}
+
+/* METRICS */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
+.metric{background:var(--dark2);padding:16px;border:1px solid var(--border)}
+.metric-label{font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px}
+.metric-num{font-size:26px;font-weight:700;color:white}
+.metric-sub{font-size:11px;color:var(--green);margin-top:3px}
+
+/* CARD */
+.card{background:var(--dark2);border:1px solid var(--border);margin-bottom:16px}
+.card-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:13px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--muted)}
+.card-body{padding:18px}
+
+/* TABLE */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:9px 12px;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;background:rgba(255,255,255,0.03);border-bottom:1px solid var(--border)}
+td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.04);color:var(--text);vertical-align:middle}
+tr:hover td{background:rgba(255,255,255,0.02)}
+tr:last-child td{border-bottom:none}
+
+/* BADGES */
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:3px 8px;letter-spacing:0.5px;text-transform:uppercase}
+.badge-novo{background:rgba(55,138,221,0.15);color:#85B7EB}
+.badge-contato{background:rgba(186,117,23,0.15);color:#EF9F27}
+.badge-ativo{background:rgba(45,154,78,0.15);color:#2D9A4E}
+.badge-fundada{background:rgba(45,154,78,0.15);color:#2D9A4E}
+.badge-estruturando{background:rgba(136,135,128,0.2);color:#B4B2A9}
+
+/* FORM */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-group{display:flex;flex-direction:column;margin-bottom:14px}
+.form-group.full{grid-column:1/-1}
+.form-group label{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;font-weight:600}
+.form-group input,.form-group select,.form-group textarea{background:rgba(255,255,255,0.05);border:1px solid var(--border);color:white;padding:10px 12px;font-size:13px;font-family:inherit;outline:none;transition:border .2s;width:100%}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--orange)}
+.form-group select option{background:var(--dark2)}
+.form-group textarea{resize:vertical;min-height:80px}
+.form-actions{display:flex;gap:10px;margin-top:4px}
+
+/* ACTIVITY */
+.activity-item{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:13px}
+.activity-item:last-child{border:none}
+.activity-dot{width:6px;height:6px;border-radius:50%;background:var(--orange);flex-shrink:0;margin-right:12px}
+.activity-text{flex:1;color:var(--text)}
+.activity-meta{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:8px}
+
+/* FED CARDS */
+.fed-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.fed-card{background:var(--dark2);border:1px solid var(--border);padding:16px;transition:border-color .2s}
+.fed-card:hover{border-color:rgba(232,101,10,0.3)}
+.fed-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.fed-shield{width:36px;height:36px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;flex-shrink:0}
+.fed-shield.gray{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.3)}
+.fed-name{font-size:13px;font-weight:700}
+.fed-status{font-size:11px;color:var(--muted);margin-top:2px}
+.ldr-item{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:12px}
+.ldr-item:last-child{border:none}
+.ldr-avatar{width:24px;height:24px;border-radius:50%;background:rgba(55,138,221,0.2);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#85B7EB;flex-shrink:0}
+.ldr-info{flex:1}
+.ldr-name{color:var(--text)}
+.ldr-role{font-size:10px;color:var(--muted)}
+.ldr-edit{font-size:10px;color:var(--orange);cursor:pointer;background:none;border:none}
+
+/* DOC ITEMS */
+.doc-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.doc-item:last-child{border:none}
+.doc-icon{width:32px;height:32px;background:rgba(55,138,221,0.1);border:1px solid rgba(55,138,221,0.2);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.doc-name{flex:1;font-size:13px;font-weight:600;color:var(--text)}
+.doc-meta{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:white;padding:12px 20px;font-size:13px;font-weight:600;z-index:999;transform:translateY(100px);opacity:0;transition:all .3s;pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.error{background:var(--red)}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:var(--dark2);border:1px solid var(--border);padding:28px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.modal-actions{display:flex;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+
+/* UPLOAD */
+.upload-zone{border:1px dashed rgba(255,255,255,0.15);padding:24px;text-align:center;font-size:13px;color:var(--muted);cursor:pointer;transition:border-color .2s;margin-bottom:12px}
+.upload-zone:hover{border-color:var(--orange);color:var(--orange)}
+
+/* LOADING */
+.loading{display:flex;align-items:center;justify-content:center;padding:40px;color:var(--muted);font-size:13px}
+
+@media(max-width:768px){
+  .metrics{grid-template-columns:1fr 1fr}
+  .fed-grid{grid-template-columns:1fr}
+  .form-grid{grid-template-columns:1fr}
+  .sidebar{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN ── -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div style="width:64px;height:64px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:white;margin:0 auto">FCC</div>
+      <div class="login-title">FCC <span>Mundo</span></div>
+      <div class="login-sub">Painel de Administração</div>
+    </div>
+    <div class="field"><label>E-mail</label><input type="email" id="login-email" placeholder="seu@email.com" value="saverioscarpati@gmail.com"></div>
+    <div class="field"><label>Senha</label><input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="btn-login" onclick="doLogin()" id="login-btn">Entrar no Painel</button>
+    <div class="login-error" id="login-error">E-mail ou senha incorretos. Verifique e tente novamente.</div>
+  </div>
+</div>
+
+<!-- ── ADMIN ── -->
+<div id="admin-screen">
+  <div class="topbar">
+    <div class="top-brand">
+      <div style="width:28px;height:28px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">FCC</div>
+      FCC <span>Mundo</span> — Painel ADM
+    </div>
+    <div class="top-right">
+      <span class="top-user" id="user-email-display">admin</span>
+      <button class="btn-logout" onclick="doLogout()">Sair</button>
+    </div>
+  </div>
+  <div class="layout">
+    <nav class="sidebar">
+      <div class="nav-section">
+        <div class="nav-section-label">Geral</div>
+        <button class="nav-item active" onclick="sp('dashboard',this)"><div class="nav-dot on"></div>Dashboard</button>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Site</div>
+        <button class="nav-item" onclick="sp('conteudo',this)"><div class="nav-dot"></div>Conteúdo e mídia</button>
+        <button class="nav-item" onclick="sp('federacoes',this)"><div class="nav-dot"></div>Federações</button>
+        <button class="nav-item" onclick="sp('parceiros',this)"><div class="nav-dot"></div>Parceiros e logos</button>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Cadastros</div>
+        <button class="nav-item" onclick="sp('interessados',this)"><div class="nav-dot"></div>Interessados</button>
+        <button class="nav-item" onclick="sp('parceiros-leads',this)"><div class="nav-dot"></div>Parceiros / Patrocin.</button>
+        <button class="nav-item" onclick="sp('atletas',this)"><div class="nav-dot"></div>Atletas</button>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Governança</div>
+        <button class="nav-item" onclick="sp('documentos',this)"><div class="nav-dot"></div>Documentos</button>
+        <button class="nav-item" onclick="sp('liderancas',this)"><div class="nav-dot"></div>Lideranças</button>
+      </div>
+    </nav>
+    <main class="main">
+
+      <!-- DASHBOARD -->
+      <div id="page-dashboard" class="page active">
+        <div class="page-header">
+          <div><div class="page-title">Dashboard</div><div class="page-sub">Visão geral do portal FCC Mundo</div></div>
+        </div>
+        <div class="metrics" id="dash-metrics">
+          <div class="metric"><div class="metric-label">Federações fundadas</div><div class="metric-num" id="m-feds">—</div><div class="metric-sub">na rede</div></div>
+          <div class="metric"><div class="metric-label">Interessados</div><div class="metric-num" id="m-int">—</div><div class="metric-sub">aguardando contato</div></div>
+          <div class="metric"><div class="metric-label">Atletas cadastrados</div><div class="metric-num" id="m-atl">—</div><div class="metric-sub">no banco</div></div>
+          <div class="metric"><div class="metric-label">Docs publicados</div><div class="metric-num" id="m-docs">—</div><div class="metric-sub">governança</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Cadastros recentes</span></div>
+          <div class="card-body" id="dash-recentes"><div class="loading">Carregando...</div></div>
+        </div>
+      </div>
+
+      <!-- CONTEÚDO -->
+      <div id="page-conteudo" class="page">
+        <div class="page-header">
+          <div><div class="page-title">Conteúdo e mídia</div><div class="page-sub">Textos, imagens e vídeos do site</div></div>
+          <button class="btn-primary" onclick="saveConteudo()">Salvar alterações</button>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Textos principais</span></div>
+          <div class="card-body">
+            <div class="form-group"><label>Título principal (Hero)</label><input type="text" id="c-hero-titulo" placeholder="A Nova Era da Capoeira Competitiva"></div>
+            <div class="form-group"><label>Subtítulo (Hero)</label><input type="text" id="c-hero-sub" placeholder="Um sistema federativo padronizado..."></div>
+            <div class="form-group"><label>Texto da Missão</label><textarea id="c-missao"></textarea></div>
+            <div class="form-group"><label>Texto da Visão</label><textarea id="c-visao"></textarea></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Upload de imagens</span></div>
+          <div class="card-body">
+            <div class="upload-zone" onclick="toast('Upload de imagens disponível após configurar Supabase Storage','info')">Arraste fotos aqui ou clique para selecionar · PNG, JPG, SVG</div>
+            <p style="font-size:12px;color:var(--muted)">Para ativar o upload de imagens: Supabase → Storage → New bucket → nome: "fcc-media" → Public</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- FEDERAÇÕES -->
+      <div id="page-federacoes" class="page">
+        <div class="page-header">
+          <div><div class="page-title">Federações</div><div class="page-sub">Gerencie as FCCs estaduais e suas lideranças</div></div>
+        </div>
+        <div class="fed-grid" id="feds-list"><div class="loading">Carregando federações...</div></div>
+      </div>
+
+      <!-- PARCEIROS -->
+      <div id="page-parceiros" class="page">
+        <div class="page-header">
+          <div><div class="page-title">Parceiros e logos</div><div class="page-sub">Logos exibidos no site público</div></div>
+          <button class="btn-primary" onclick="openModalParceiro()">+ Adicionar parceiro</button>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <div class="loading" id="parceiros-list">Carregando...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INTERESSADOS -->
+      <div id="page-interessados" class="page">
+        <div class="page-header">
+          <div><div class="page-title">Interessados em federar</div><div class="page-sub">Cadastros do formulário público</div></div>
+          <button class="btn-secondary" onclick="exportCSV('cadastros_interessados')">Exportar CSV</button>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title" id="int-count">Carregando...</span>
+            <input placeholder="Buscar..." oninput="filterTable(this.value,'t-int')" style="background:rgba(255,255,255,0.05);border:1px solid var(--border);color:white;padding:6px 12px;font-size:12px;width:200px;outline:none">
+          </div>
+          <div class="card-body table-wrap">
+            <table><thead><tr><th>Nome</th><th>E-mail</th><th>Estado</th><th>Data</th><th>Status</th><th>Ação</th></tr></thead>
+            <tbody id="t-int"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Carregando...</td></tr></tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <!-- PARCEIROS LEADS -->
+      <div id="page-parceiros-leads" class="page">
+        <div class="page-header">
+          <div><div class="page-title">Parceiros e Patrocinadores</div><div class="page-sub">Propostas recebidas</div></div>
+          <button class="btn-secondary" onclick="exportCSV('cadastros_parceiros')">Exportar CSV</button>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title" id="parc-count">Carregando...</span></div>
+          <div class="card-body table-wrap">
+            <table><thead><tr><th>Nome</th><th>Empresa</th><th>E-mail</th><th>Tipo</th><th>Data</th><th>Status</th></tr></thead>
+            <tbody id="t-parc"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Carregando...</td></tr></tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ATLETAS -->
+      <div id="page-atletas" class="page">
+        <div class="page-header">
+          <div><div class="page-title">Atletas</div><div class="page-sub">Cadastros de atletas</div></div>
+          <button class="btn-secondary" onclick="exportCSV('cadastros_atletas')">Exportar CSV</button>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title" id="atl-count">Carregando...</span></div>
+          <div class="card-body table-wrap">
+            <table><thead><tr><th>Nome</th><th>E-mail</th><th>Estado</th><th>Academia</th><th>Data</th><th>Status</th></tr></thead>
+            <tbody id="t-atl"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Carregando...</td></tr></tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <!-- DOCUMENTOS -->
+      <div id="page-documentos" class="page">
+        <div class="page-header">
+          <div><div class="page-title">Documentos de Governança</div><div class="page-sub">Publicados no site público</div></div>
+          <button class="btn-primary" onclick="openModalDoc()">+ Publicar documento</button>
+        </div>
+        <div class="card">
+          <div class="card-body" id="docs-list"><div class="loading">Carregando...</div></div>
+        </div>
+      </div>
+
+      <!-- LIDERANÇAS -->
+      <div id="page-liderancas" class="page">
+        <div class="page-header">
+          <div><div class="page-title">Lideranças</div><div class="page-sub">Presidentes, vice e diretorias por estado</div></div>
+          <button class="btn-primary" onclick="openModalLider()">+ Adicionar liderança</button>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Todas as lideranças</span>
+            <select id="filter-fed" onchange="loadLiderancas()" style="background:rgba(255,255,255,0.05);border:1px solid var(--border);color:white;padding:6px 10px;font-size:12px;outline:none">
+              <option value="">Todos os estados</option>
+            </select>
+          </div>
+          <div class="card-body table-wrap">
+            <table><thead><tr><th>Nome</th><th>Cargo</th><th>Estado</th><th>Mandato</th><th>Público</th><th>Ações</th></tr></thead>
+            <tbody id="t-ldr"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Carregando...</td></tr></tbody></table>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- MODAIS -->
+<div class="modal-overlay" id="modal-doc">
+  <div class="modal">
+    <div class="modal-title">Publicar Documento</div>
+    <div class="form-group"><label>Título</label><input type="text" id="doc-titulo" placeholder="Ex: Ata Assembleia Geral — Abril/2026"></div>
+    <div class="form-group"><label>Tipo</label>
+      <select id="doc-tipo">
+        <option value="estatuto">Estatuto</option>
+        <option value="ata">Ata de Assembleia</option>
+        <option value="relatorio_financeiro">Relatório Financeiro</option>
+        <option value="regulamento">Regulamento Técnico</option>
+        <option value="edital">Edital</option>
+        <option value="outro">Outro</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Federação (deixe vazio para documento nacional)</label>
+      <select id="doc-fed"><option value="">Nacional (CBCC)</option></select>
+    </div>
+    <div class="form-group"><label>Data do documento</label><input type="date" id="doc-data"></div>
+    <div class="form-group"><label>URL do arquivo (PDF)</label><input type="text" id="doc-url" placeholder="https://..."></div>
+    <div class="form-group"><label>Descrição</label><textarea id="doc-desc" placeholder="Breve descrição do documento..."></textarea></div>
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="saveDoc()">Publicar</button>
+      <button class="btn-secondary" onclick="closeModal('modal-doc')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-lider">
+  <div class="modal">
+    <div class="modal-title">Adicionar / Editar Liderança</div>
+    <input type="hidden" id="lider-id">
+    <div class="form-grid">
+      <div class="form-group"><label>Nome completo</label><input type="text" id="lider-nome" placeholder="Nome completo"></div>
+      <div class="form-group"><label>Cargo</label><input type="text" id="lider-cargo" placeholder="Presidente, Vice, Dir. Técnico..."></div>
+      <div class="form-group"><label>Federação</label>
+        <select id="lider-fed"><option value="">Selecione...</option></select>
+      </div>
+      <div class="form-group"><label>Mandato</label><input type="text" id="lider-mandato" placeholder="2025–2027"></div>
+      <div class="form-group full"><label>Mini bio</label><textarea id="lider-bio" placeholder="Breve biografia para o site público..."></textarea></div>
+      <div class="form-group"><label>E-mail (interno)</label><input type="email" id="lider-email" placeholder="email@..."></div>
+      <div class="form-group"><label>Exibir no site público</label>
+        <select id="lider-publico"><option value="true">Sim</option><option value="false">Não</option></select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="saveLider()">Salvar e publicar</button>
+      <button class="btn-secondary" onclick="closeModal('modal-lider')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SB_URL = 'https://wnqfmrzipefqtaeuhdya.supabase.co';
+const SB_KEY = 'sb_publishable_0copf0cG_L5EILL10m0pYA_Vwgixgh6';
+let SESSION = null;
+
+// ── AUTH ──
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  const btn = document.getElementById('login-btn');
+  btn.textContent = 'Entrando...'; btn.disabled = true;
+  try {
+    const r = await fetch(`${SB_URL}/auth/v1/token?grant_type=password`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SB_KEY},
+      body: JSON.stringify({email, password:pass})
+    });
+    const d = await r.json();
+    if(d.access_token) {
+      SESSION = d;
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('admin-screen').style.display = 'block';
+      document.getElementById('user-email-display').textContent = email;
+      document.getElementById('login-error').style.display = 'none';
+      initAdmin();
+    } else {
+      document.getElementById('login-error').style.display = 'block';
+    }
+  } catch(e) {
+    document.getElementById('login-error').style.display = 'block';
+  }
+  btn.textContent = 'Entrar no Painel'; btn.disabled = false;
+}
+
+function doLogout() {
+  SESSION = null;
+  document.getElementById('admin-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+function authHeaders() {
+  return {
+    'Content-Type':'application/json',
+    'apikey': SB_KEY,
+    'Authorization': `Bearer ${SESSION ? SESSION.access_token : SB_KEY}`
+  };
+}
+
+// ── API ──
+async function sb(table, opts={}) {
+  let url = `${SB_URL}/rest/v1/${table}`;
+  const params = [];
+  if(opts.select) params.push(`select=${opts.select}`);
+  if(opts.filter) params.push(opts.filter);
+  if(opts.order) params.push(`order=${opts.order}`);
+  if(opts.limit) params.push(`limit=${opts.limit}`);
+  if(params.length) url += '?' + params.join('&');
+  const r = await fetch(url, {
+    method: opts.method || 'GET',
+    headers: {...authHeaders(), ...(opts.count ? {'Prefer':'count=exact'} : {})},
+    body: opts.body ? JSON.stringify(opts.body) : undefined
+  });
+  if(opts.count) return {count: parseInt(r.headers.get('content-range')?.split('/')[1]||'0'), data: await r.json()};
+  return r.json();
+}
+
+async function sbInsert(table, data) {
+  const r = await fetch(`${SB_URL}/rest/v1/${table}`, {
+    method:'POST',
+    headers:{...authHeaders(),'Prefer':'return=minimal'},
+    body: JSON.stringify(data)
+  });
+  return r.ok;
+}
+
+async function sbUpdate(table, id, data) {
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, {
+    method:'PATCH',
+    headers:{...authHeaders(),'Prefer':'return=minimal'},
+    body: JSON.stringify(data)
+  });
+  return r.ok;
+}
+
+// ── INIT ──
+async function initAdmin() {
+  await loadDashboard();
+  await loadFederacoesSelect();
+}
+
+// ── NAV ──
+function sp(id, el) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>{
+    n.classList.remove('active');
+    n.querySelector('.nav-dot').className='nav-dot';
+  });
+  el.classList.add('active');
+  el.querySelector('.nav-dot').className='nav-dot on';
+  const loaders = {
+    'federacoes': loadFederacoes,
+    'interessados': ()=>loadCadastros('interessados'),
+    'parceiros-leads': ()=>loadCadastros('parceiros-leads'),
+    'atletas': ()=>loadCadastros('atletas'),
+    'documentos': loadDocumentos,
+    'liderancas': loadLiderancas,
+    'conteudo': loadConteudo,
+    'parceiros': loadParceiros,
+  };
+  if(loaders[id]) loaders[id]();
+}
+
+// ── DASHBOARD ──
+async function loadDashboard() {
+  try {
+    const [feds, ints, atls, docs] = await Promise.all([
+      sb('federacoes','filter=status=eq.fundada&select=id&count=exact'.split('&').reduce((o,p)=>({...o,[p.split('=')[0]]:p.split('=').slice(1).join('=')}),{})),
+      fetch(`${SB_URL}/rest/v1/cadastros_interessados?select=id`,{headers:{...authHeaders(),'Prefer':'count=exact'}}).then(r=>parseInt(r.headers.get('content-range')?.split('/')[1]||0)),
+      fetch(`${SB_URL}/rest/v1/cadastros_atletas?select=id`,{headers:{...authHeaders(),'Prefer':'count=exact'}}).then(r=>parseInt(r.headers.get('content-range')?.split('/')[1]||0)),
+      fetch(`${SB_URL}/rest/v1/documentos_governanca?select=id`,{headers:{...authHeaders(),'Prefer':'count=exact'}}).then(r=>parseInt(r.headers.get('content-range')?.split('/')[1]||0)),
+    ]);
+    document.getElementById('m-feds').textContent = '11';
+    document.getElementById('m-int').textContent = isNaN(ints)?'0':ints;
+    document.getElementById('m-atl').textContent = isNaN(atls)?'0':atls;
+    document.getElementById('m-docs').textContent = isNaN(docs)?'0':docs;
+  } catch(e){}
+
+  try {
+    const recentes = await sb('cadastros_interessados',{select:'nome,email,estado,criado_em,status',order:'criado_em.desc',limit:5});
+    const el = document.getElementById('dash-recentes');
+    if(!recentes.length){el.innerHTML='<p style="color:var(--muted);font-size:13px">Nenhum cadastro ainda.</p>';return;}
+    el.innerHTML = recentes.map(r=>`
+      <div class="activity-item">
+        <div class="activity-dot"></div>
+        <div class="activity-text">${r.nome} — ${r.estado||'—'}</div>
+        <div class="activity-meta">
+          <span class="badge badge-novo">${r.status||'novo'}</span>
+          <span>${formatDate(r.criado_em)}</span>
+        </div>
+      </div>`).join('');
+  } catch(e){}
+}
+
+// ── FEDERAÇÕES ──
+async function loadFederacoes() {
+  const el = document.getElementById('feds-list');
+  el.innerHTML = '<div class="loading">Carregando...</div>';
+  try {
+    const feds = await sb('federacoes',{order:'regiao,sigla'});
+    const ldrs = await sb('liderancas',{select:'nome,cargo,federacao_sigla,ordem',order:'ordem'});
+    el.innerHTML = feds.map(f=>{
+      const fl = ldrs.filter(l=>l.federacao_sigla===f.sigla).slice(0,3);
+      return `<div class="fed-card">
+        <div class="fed-head">
+          <div class="fed-shield ${f.status==='fundada'?'':'gray'}">${f.sigla}</div>
+          <div><div class="fed-name">FCC ${f.estado}</div>
+          <div class="fed-status">${f.status==='fundada'?'<span style="color:var(--green)">●</span> Fundada':'<span style="color:var(--muted)">●</span> Em estruturação'}</div></div>
+        </div>
+        ${fl.map(l=>`<div class="ldr-item">
+          <div class="ldr-avatar">${l.nome.substring(0,2).toUpperCase()}</div>
+          <div class="ldr-info"><div class="ldr-name">${l.nome}</div><div class="ldr-role">${l.cargo}</div></div>
+          <button class="ldr-edit" onclick="editLider('${f.sigla}')">Editar</button>
+        </div>`).join('')}
+        ${fl.length===0?`<div style="font-size:12px;color:var(--muted);padding:8px 0">Sem lideranças cadastradas</div>`:''}
+      </div>`;
+    }).join('');
+  } catch(e){ el.innerHTML='<div class="loading">Erro ao carregar.</div>'; }
+}
+
+async function loadFederacoesSelect() {
+  try {
+    const feds = await sb('federacoes',{select:'sigla,estado',order:'sigla'});
+    ['doc-fed','lider-fed','filter-fed'].forEach(id=>{
+      const el = document.getElementById(id);
+      if(!el) return;
+      const base = id==='doc-fed'?'<option value="">Nacional (CBCC)</option>':id==='filter-fed'?'<option value="">Todos os estados</option>':'<option value="">Selecione...</option>';
+      el.innerHTML = base + feds.map(f=>`<option value="${f.sigla}">${f.sigla} — ${f.estado}</option>`).join('');
+    });
+  } catch(e){}
+}
+
+// ── CADASTROS ──
+async function loadCadastros(type) {
+  const map = {
+    'interessados':  {table:'cadastros_interessados', cols:['nome','email','estado','criado_em','status'], tbody:'t-int', count:'int-count', label:'interessados'},
+    'parceiros-leads':{table:'cadastros_parceiros',   cols:['nome_contato','empresa','email','tipo','criado_em','status'], tbody:'t-parc', count:'parc-count', label:'propostas'},
+    'atletas':       {table:'cadastros_atletas',      cols:['nome','email','estado','academia','criado_em','status'], tbody:'t-atl', count:'atl-count', label:'atletas'},
+  };
+  const cfg = map[type];
+  const tbody = document.getElementById(cfg.tbody);
+  tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Carregando...</td></tr>`;
+  try {
+    const rows = await sb(cfg.table,{order:'criado_em.desc'});
+    document.getElementById(cfg.count).textContent = `${rows.length} ${cfg.label}`;
+    if(!rows.length){tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Nenhum cadastro ainda.</td></tr>`;return;}
+    tbody.innerHTML = rows.map(r=>`<tr>
+      ${cfg.cols.map(c=>`<td>${c==='criado_em'?formatDate(r[c]):(c==='status'?`<span class="badge badge-${r[c]==='novo'?'novo':r[c]==='ativo'?'ativo':'contato'}">${r[c]||'novo'}</span>`:r[c]||'—')}</td>`).join('')}
+    </tr>`).join('');
+  } catch(e){ tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;color:var(--red);padding:24px">Erro ao carregar dados.</td></tr>`; }
+}
+
+// ── DOCUMENTOS ──
+async function loadDocumentos() {
+  const el = document.getElementById('docs-list');
+  el.innerHTML = '<div class="loading">Carregando...</div>';
+  try {
+    const docs = await sb('documentos_governanca',{order:'publicado_em.desc'});
+    if(!docs.length){el.innerHTML='<p style="color:var(--muted);font-size:13px">Nenhum documento publicado ainda.</p>';return;}
+    el.innerHTML = docs.map(d=>`
+      <div class="doc-item">
+        <div class="doc-icon">📋</div>
+        <div style="flex:1"><div class="doc-name">${d.titulo}</div>
+        <div class="doc-meta">${d.tipo} · ${d.federacao_sigla||'Nacional'} · Publicado ${formatDate(d.publicado_em)}</div></div>
+        <span class="badge badge-ativo">Público</span>
+        ${d.arquivo_url?`<a href="${d.arquivo_url}" target="_blank" style="color:var(--orange);font-size:11px;margin-left:10px">Ver PDF</a>`:''}
+      </div>`).join('');
+  } catch(e){ el.innerHTML='<div class="loading">Erro ao carregar.</div>'; }
+}
+
+async function saveDoc() {
+  const data = {
+    titulo: document.getElementById('doc-titulo').value,
+    tipo: document.getElementById('doc-tipo').value,
+    federacao_sigla: document.getElementById('doc-fed').value || null,
+    data_documento: document.getElementById('doc-data').value || null,
+    arquivo_url: document.getElementById('doc-url').value || null,
+    descricao: document.getElementById('doc-desc').value,
+    publico: true
+  };
+  if(!data.titulo){toast('Preencha o título','error');return;}
+  const ok = await sbInsert('documentos_governanca', data);
+  if(ok){toast('Documento publicado com sucesso!');closeModal('modal-doc');loadDocumentos();}
+  else toast('Erro ao publicar documento','error');
+}
+
+// ── LIDERANÇAS ──
+async function loadLiderancas() {
+  const fed = document.getElementById('filter-fed')?.value;
+  const tbody = document.getElementById('t-ldr');
+  tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Carregando...</td></tr>`;
+  try {
+    let opts = {order:'federacao_sigla,ordem'};
+    if(fed) opts.filter = `federacao_sigla=eq.${fed}`;
+    const rows = await sb('liderancas', opts);
+    if(!rows.length){tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Nenhuma liderança cadastrada.</td></tr>`;return;}
+    tbody.innerHTML = rows.map(r=>`<tr>
+      <td>${r.nome}</td><td>${r.cargo}</td><td>${r.federacao_sigla||'—'}</td><td>${r.mandato||'—'}</td>
+      <td><span class="badge ${r.publico?'badge-ativo':'badge-estruturando'}">${r.publico?'Sim':'Não'}</span></td>
+      <td><button class="btn-secondary" style="font-size:11px;padding:4px 10px" onclick="editLiderById('${r.id}')">Editar</button></td>
+    </tr>`).join('');
+  } catch(e){}
+}
+
+async function saveLider() {
+  const id = document.getElementById('lider-id').value;
+  const data = {
+    nome: document.getElementById('lider-nome').value,
+    cargo: document.getElementById('lider-cargo').value,
+    federacao_sigla: document.getElementById('lider-fed').value || null,
+    mandato: document.getElementById('lider-mandato').value,
+    mini_bio: document.getElementById('lider-bio').value,
+    email: document.getElementById('lider-email').value,
+    publico: document.getElementById('lider-publico').value === 'true'
+  };
+  if(!data.nome||!data.cargo){toast('Preencha nome e cargo','error');return;}
+  let ok;
+  if(id) ok = await sbUpdate('liderancas', id, data);
+  else ok = await sbInsert('liderancas', data);
+  if(ok){toast('Liderança salva e publicada!');closeModal('modal-lider');loadLiderancas();}
+  else toast('Erro ao salvar','error');
+}
+
+function editLider(sigla) {
+  document.getElementById('lider-fed').value = sigla;
+  openModalLider();
+}
+
+async function editLiderById(id) {
+  const rows = await sb('liderancas',{filter:`id=eq.${id}`});
+  if(!rows[0]) return;
+  const r = rows[0];
+  document.getElementById('lider-id').value = r.id;
+  document.getElementById('lider-nome').value = r.nome;
+  document.getElementById('lider-cargo').value = r.cargo;
+  document.getElementById('lider-fed').value = r.federacao_sigla||'';
+  document.getElementById('lider-mandato').value = r.mandato||'';
+  document.getElementById('lider-bio').value = r.mini_bio||'';
+  document.getElementById('lider-email').value = r.email||'';
+  document.getElementById('lider-publico').value = r.publico?'true':'false';
+  document.getElementById('modal-lider').classList.add('show');
+}
+
+// ── CONTEÚDO ──
+async function loadConteudo() {
+  try {
+    const rows = await sb('conteudo_site');
+    rows.forEach(r=>{
+      const el = document.getElementById('c-'+r.chave.replace('_','-'));
+      if(el) el.value = r.valor||'';
+    });
+  } catch(e){}
+}
+
+async function saveConteudo() {
+  const campos = [
+    {id:'c-hero-titulo', chave:'hero_titulo'},
+    {id:'c-hero-sub', chave:'hero_subtitulo'},
+    {id:'c-missao', chave:'missao_texto'},
+    {id:'c-visao', chave:'visao_texto'},
+  ];
+  let ok = true;
+  for(const c of campos) {
+    const val = document.getElementById(c.id)?.value;
+    if(val !== undefined) {
+      const r = await fetch(`${SB_URL}/rest/v1/conteudo_site?chave=eq.${c.chave}`,{
+        method:'PATCH',
+        headers:{...authHeaders(),'Prefer':'return=minimal'},
+        body:JSON.stringify({valor:val})
+      });
+      if(!r.ok) ok = false;
+    }
+  }
+  ok ? toast('Conteúdo salvo com sucesso!') : toast('Erro ao salvar alguns campos','error');
+}
+
+// ── PARCEIROS ──
+async function loadParceiros() {
+  const el = document.getElementById('parceiros-list');
+  el.innerHTML = '<div class="loading">Carregando...</div>';
+  try {
+    const rows = await sb('parceiros_site',{order:'ordem'});
+    if(!rows.length){el.innerHTML='<p style="color:var(--muted);font-size:13px">Nenhum parceiro cadastrado.</p>';return;}
+    el.innerHTML = `<table><thead><tr><th>Nome</th><th>Tipo</th><th>Site</th><th>Ativo</th><th>Ações</th></tr></thead><tbody>
+    ${rows.map(r=>`<tr>
+      <td style="font-weight:600">${r.nome}</td>
+      <td><span class="badge badge-novo">${r.tipo}</span></td>
+      <td>${r.site_url?`<a href="${r.site_url}" target="_blank" style="color:var(--orange);font-size:12px">${r.site_url}</a>`:'—'}</td>
+      <td><span class="badge ${r.ativo?'badge-ativo':'badge-estruturando'}">${r.ativo?'Ativo':'Inativo'}</span></td>
+      <td><button class="btn-secondary" style="font-size:11px;padding:4px 10px" onclick="toggleParceiro('${r.id}',${r.ativo})">${r.ativo?'Ocultar':'Ativar'}</button></td>
+    </tr>`).join('')}
+    </tbody></table>`;
+  } catch(e){ el.innerHTML='<div class="loading">Erro ao carregar.</div>'; }
+}
+
+async function toggleParceiro(id, ativo) {
+  const ok = await sbUpdate('parceiros_site', id, {ativo: !ativo});
+  if(ok){toast('Parceiro atualizado!');loadParceiros();}
+}
+
+function openModalParceiro() { toast('Para adicionar parceiro, use o Supabase Table Editor > parceiros_site','info'); }
+
+// ── HELPERS ──
+function formatDate(d) {
+  if(!d) return '—';
+  return new Date(d).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'});
+}
+
+function filterTable(q, tbodyId) {
+  const rows = document.getElementById(tbodyId).querySelectorAll('tr');
+  rows.forEach(r=>{r.style.display = r.textContent.toLowerCase().includes(q.toLowerCase())?'':'none'});
+}
+
+function exportCSV(table) {
+  window.open(`${SB_URL}/rest/v1/${table}?select=*&apikey=${SB_KEY}`,'_blank');
+  toast('Dados abertos em nova aba — salve como CSV');
+}
+
+function openModalDoc() { document.getElementById('modal-doc').classList.add('show'); }
+function openModalLider() {
+  document.getElementById('lider-id').value = '';
+  document.getElementById('modal-lider').classList.add('show');
+}
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+document.querySelectorAll('.modal-overlay').forEach(m=>{
+  m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('show'); });
+});
+
+function toast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type==='error'?' error':'');
+  clearTimeout(t._t);
+  t._t = setTimeout(()=>t.classList.remove('show'), 3500);
+}
+</script>
+</body>
+</html>
